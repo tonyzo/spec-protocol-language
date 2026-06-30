@@ -1,0 +1,239 @@
+{
+  "_schema_version": "1.0",
+  "_description": "NB/T 47012 换热压力容器 参数映射表 - 术语与SPEC Protocol参数的映射关系",
+  "_standard": "NB/T 47012-2023",
+  
+  "standard_info": {
+    "name": "NB/T 47012 换热压力容器",
+    "version": "2023",
+    "parts": [
+      "NB/T 47012-2023 换热压力容器"
+    ]
+  },
+
+  "terms": [
+    {
+      "term_id": "pressure.design",
+      "standard_term": "设计压力",
+      "definition": "设定的容器顶部的最高压力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_pressure",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1",
+      "referenced_by": ["NB47012-管束设计", "NB47012-壳体设计"],
+      "related_terms": ["pressure.operating", "pressure.calc"],
+      "confidence": "high",
+      "note": "与GB150定义一致,但需考虑管程和壳程双压力"
+    },
+    {
+      "term_id": "temperature.design",
+      "standard_term": "设计温度",
+      "definition": "容器在正常工作情况下,设定的元件金属温度",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_temperature",
+        "unit": "°C",
+        "data_type": "f64"
+      },
+      "source_clause": "3.2",
+      "referenced_by": ["NB47012-管束设计", "NB47012-壳体设计", "NB47012-温差应力"],
+      "related_terms": ["temperature.max", "temperature.min"],
+      "confidence": "high",
+      "note": "换热器需考虑管程和壳程双温度,以及温差应力"
+    },
+    {
+      "term_id": "heat_transfer.area",
+      "standard_term": "换热面积",
+      "definition": "换热器中参与热交换的有效面积",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "heat_transfer_area",
+        "unit": "m²",
+        "data_type": "f64"
+      },
+      "source_clause": "4.1",
+      "referenced_by": ["NB47012-换热计算"],
+      "related_terms": ["tube.count", "tube.length"],
+      "confidence": "high",
+      "note": "换热面积是换热器的核心参数,决定换热能力"
+    },
+    {
+      "term_id": "tube.count",
+      "standard_term": "换热管数量",
+      "definition": "换热器中换热管的总数",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "tube_count",
+        "unit": "根",
+        "data_type": "i32"
+      },
+      "source_clause": "5.2",
+      "referenced_by": ["NB47012-管束设计", "NB47012-管板设计"],
+      "related_terms": ["tube.diameter", "tube.length", "heat_transfer_area"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "tube.diameter",
+      "standard_term": "换热管外径",
+      "definition": "换热管的外径",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "tube_outer_diameter",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "5.2",
+      "referenced_by": ["NB47012-管束设计"],
+      "related_terms": ["tube.count", "tube.pitch"],
+      "confidence": "high",
+      "note": "常用规格:Φ19mm, Φ25mm, Φ32mm"
+    },
+    {
+      "term_id": "tube.pitch",
+      "standard_term": "管间距",
+      "definition": "相邻换热管中心之间的距离",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "tube_pitch",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "5.3",
+      "referenced_by": ["NB47012-管板设计"],
+      "related_terms": ["tube.diameter", "tube.count"],
+      "confidence": "high",
+      "note": "管间距影响换热效率和清洗空间"
+    },
+    {
+      "term_id": "shell.diameter",
+      "standard_term": "壳体内径",
+      "definition": "换热器壳体的内径",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "shell_inner_diameter",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "4.2",
+      "referenced_by": ["NB47012-壳体设计", "NB47012-管板设计"],
+      "related_terms": ["tube.count", "tube.pitch"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "tube_plate.type",
+      "standard_term": "管板类型",
+      "definition": "管板的结构类型",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "tube_plate_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["固定管板", "浮头式", "U形管式", "填料函式"]
+      },
+      "source_clause": "3.3",
+      "referenced_by": ["NB47012-管板设计"],
+      "related_terms": [],
+      "confidence": "high",
+      "note": "管板类型决定换热器的结构形式和温差补偿方式"
+    },
+    {
+      "term_id": "baffle.type",
+      "standard_term": "折流板类型",
+      "definition": "壳程折流板的结构类型",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "baffle_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["单弓形", "双弓形", "三弓形", "圆盘-圆环形"]
+      },
+      "source_clause": "5.4",
+      "referenced_by": ["NB47012-壳程设计"],
+      "related_terms": ["baffle.spacing", "baffle.cut"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "baffle.spacing",
+      "standard_term": "折流板间距",
+      "definition": "相邻折流板之间的距离",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "baffle_spacing",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "5.4",
+      "referenced_by": ["NB47012-壳程设计"],
+      "related_terms": ["baffle.type", "shell.diameter"],
+      "confidence": "high",
+      "note": "折流板间距影响壳程流速和传热系数"
+    }
+  ],
+
+  "parameter_groups": {
+    "design": [
+      "design_pressure",
+      "design_temperature",
+      "operating_pressure",
+      "calc_pressure"
+    ],
+    "geometry": [
+      "shell_inner_diameter",
+      "tube_outer_diameter",
+      "tube_pitch",
+      "tube_count",
+      "baffle_spacing"
+    ],
+    "stress": [
+      "sigma_tube",
+      "sigma_shell",
+      "sigma_tube_plate",
+      "thermal_stress"
+    ],
+    "limits": [
+      "delta_min",
+      "sigma_allow",
+      "pressure_allow"
+    ],
+    "material": [
+      "R_m",
+      "R_eL",
+      "E_t"
+    ],
+    "welding_ndt": [
+      "phi",
+      "ndt_ratio",
+      "rt_defect_level"
+    ],
+    "test": [
+      "test_pressure_actual",
+      "hold_time"
+    ],
+    "attrs": [
+      "tube_plate_type",
+      "baffle_type",
+      "material_category"
+    ]
+  },
+
+  "cross_references": {
+    "NB47012→GB150": {
+      "description": "换热压力容器引用GB150通用要求",
+      "terms": ["design_pressure", "design_temperature", "sigma_allow"]
+    }
+  },
+
+  "validation_rules": [
+    {
+      "rule": "所有parameters必须携带unit字段",
+      "check": "terms[*].spec_mapping.type=='parameter' implies spec_mapping.unit != null"
+    },
+    {
+      "rule": "attrs类型不能有unit",
+      "check": "terms[*].spec_mapping.type=='attr' implies spec_mapping.unit == null"
+    }
+  ]
+}

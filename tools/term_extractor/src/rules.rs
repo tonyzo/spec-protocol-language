@@ -1,0 +1,242 @@
+//! 规则生成模块
+//!
+//! 从param_mapping.json生成规则YAML骨架
+
+use crate::models::ParamMapping;
+use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+
+/// 生成规则YAML骨架
+pub fn generate_rules(mapping: &ParamMapping, output: &Path) -> anyhow::Result<()> {
+    log::info!("开始生成规则YAML骨架...");
+    
+    // 创建输出目录
+    fs::create_dir_all(output)?;
+    
+    // 按类别生成规则文件
+    let rule_files = generate_rule_files(mapping)?;
+    
+    // 写入文件
+    for (filename, content) in rule_files {
+        let file_path = output.join(&filename);
+        fs::write(&file_path, content)?;
+        log::info!("生成规则文件: {:?}", file_path);
+    }
+    
+    log::info!("规则YAML骨架生成完成!");
+    Ok(())
+}
+
+/// 生成规则文件内容
+fn generate_rule_files(mapping: &ParamMapping) -> anyhow::Result<Vec<(String, String)>> {
+    let mut files = Vec::new();
+    
+    // 生成内压圆筒规则
+    files.push(generate_internal_pressure_rules(mapping)?);
+    
+    // 生成外压圆筒规则
+    files.push(generate_external_pressure_rules(mapping)?);
+    
+    // 生成封头规则
+    files.push(generate_head_rules(mapping)?);
+    
+    // 生成法兰规则
+    files.push(generate_flange_rules(mapping)?);
+    
+    // 生成焊接规则
+    files.push(generate_welding_rules(mapping)?);
+    
+    // 生成NDT规则
+    files.push(generate_ndt_rules(mapping)?);
+    
+    // 生成耐压试验规则
+    files.push(generate_pressure_test_rules(mapping)?);
+    
+    Ok(files)
+}
+
+/// 生成内压圆筒规则
+fn generate_internal_pressure_rules(mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.3-5.3 内压圆筒 —— 合规规则\n");
+    content.push_str("#\n");
+    content.push_str("# 规则库文件：候选规则，尚未绑定到任何设计类型。\n\n");
+    
+    // 规则1: 环向应力校核
+    content.push_str("# ─── 规则 1：环向应力校核 (GB150.3 公式 5-5) ───\n");
+    content.push_str("# σθ ≤ [σ]^t · φ\n");
+    content.push_str("- id: GB150.3-5.3.sigma\n");
+    content.push_str("  clause: \"5.3 / 公式 5-5\"\n");
+    content.push_str("  severity: error\n");
+    content.push_str("  applicability:\n");
+    content.push_str("    type: eq\n");
+    content.push_str("    value:\n");
+    content.push_str("      - {attr: element_type}\n");
+    content.push_str("      - \"内压圆筒\"\n");
+    content.push_str("  assertion:\n");
+    content.push_str("    type: le\n");
+    content.push_str("    value:\n");
+    if mapping.has_param("sigma") {
+        content.push_str("      - {param: sigma}\n");
+    }
+    if mapping.has_param("sigma_allow") {
+        content.push_str("      - {limit: sigma_allow}\n");
+    }
+    content.push_str("  message: \"环向应力 {actual} MPa 超过许用应力 {expected} MPa\"\n\n");
+    
+    // 规则2: 最小壁厚校核
+    content.push_str("# ─── 规则 2：最小壁厚校核 (GB150.3 5.3) ───\n");
+    content.push_str("# δ ≥ δ_min\n");
+    content.push_str("- id: GB150.3-5.3.delta_min\n");
+    content.push_str("  clause: \"5.3\"\n");
+    content.push_str("  severity: error\n");
+    content.push_str("  applicability:\n");
+    content.push_str("    type: eq\n");
+    content.push_str("    value:\n");
+    content.push_str("      - {attr: element_type}\n");
+    content.push_str("      - \"内压圆筒\"\n");
+    content.push_str("  assertion:\n");
+    content.push_str("    type: ge\n");
+    content.push_str("    value:\n");
+    if mapping.has_param("delta") {
+        content.push_str("      - {param: delta}\n");
+    }
+    if mapping.has_param("delta_min") {
+        content.push_str("      - {limit: delta_min}\n");
+    }
+    content.push_str("  message: \"壁厚 {actual} mm 小于最小允许壁厚 {expected} mm\"\n\n");
+    
+    // 规则3: 焊接系数范围
+    content.push_str("# ─── 规则 3：焊接系数范围 (GB150.3 表 2) ───\n");
+    content.push_str("# 0 < φ ≤ 1.0\n");
+    content.push_str("- id: GB150.3-5.3.phi_range\n");
+    content.push_str("  clause: \"表 2\"\n");
+    content.push_str("  severity: error\n");
+    content.push_str("  applicability:\n");
+    content.push_str("    type: eq\n");
+    content.push_str("    value:\n");
+    content.push_str("      - {attr: element_type}\n");
+    content.push_str("      - \"内压圆筒\"\n");
+    content.push_str("  assertion:\n");
+    content.push_str("    type: and\n");
+    content.push_str("    value:\n");
+    content.push_str("      - type: gt\n");
+    content.push_str("        value:\n");
+    if mapping.has_param("phi") {
+        content.push_str("          - {param: phi}\n");
+    }
+    content.push_str("          - 0\n");
+    content.push_str("      - type: le\n");
+    content.push_str("        value:\n");
+    if mapping.has_param("phi") {
+        content.push_str("          - {param: phi}\n");
+    }
+    content.push_str("          - 1.0\n");
+    content.push_str("  message: \"焊接接头系数 {actual} 超出允许范围 (0, 1.0]\"\n");
+    
+    Ok(("5.3-内压圆筒.yaml".to_string(), content))
+}
+
+/// 生成外压圆筒规则
+fn generate_external_pressure_rules(mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.3-6 外压圆筒和球壳 —— 合规规则\n\n");
+    
+    // 规则1: 外压稳定性
+    content.push_str("# ─── 规则 1：外压稳定性校核 (GB150.3 6.3.2) ───\n");
+    content.push_str("# p_calc ≤ p_allow\n");
+    content.push_str("- id: GB150.3-6.3.stability\n");
+    content.push_str("  clause: \"6.3.2\"\n");
+    content.push_str("  severity: error\n");
+    content.push_str("  applicability:\n");
+    content.push_str("    type: eq\n");
+    content.push_str("    value:\n");
+    content.push_str("      - {attr: element_type}\n");
+    content.push_str("      - \"外压圆筒\"\n");
+    content.push_str("  assertion:\n");
+    content.push_str("    type: le\n");
+    content.push_str("    value:\n");
+    if mapping.has_param("calc_pressure") {
+        content.push_str("      - {param: calc_pressure}\n");
+    }
+    if mapping.has_param("pressure_allow") {
+        content.push_str("      - {limit: pressure_allow}\n");
+    }
+    content.push_str("  message: \"计算外压 {actual} MPa 超过许用外压 {expected} MPa\"\n");
+    
+    Ok(("6-外压圆筒和球壳.yaml".to_string(), content))
+}
+
+/// 生成封头规则
+fn generate_head_rules(mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.3-7 封头 —— 合规规则\n\n");
+    
+    // 规则1: 椭圆封头应力
+    content.push_str("# ─── 规则 1：椭圆封头应力校核 (GB150.3 7.3.2) ───\n");
+    content.push_str("# σ ≤ [σ]^t · φ\n");
+    content.push_str("- id: GB150.3-7.3.elliptical_stress\n");
+    content.push_str("  clause: \"7.3.2\"\n");
+    content.push_str("  severity: error\n");
+    content.push_str("  applicability:\n");
+    content.push_str("    type: eq\n");
+    content.push_str("    value:\n");
+    content.push_str("      - {attr: element_type}\n");
+    content.push_str("      - \"椭圆形封头\"\n");
+    content.push_str("  assertion:\n");
+    content.push_str("    type: le\n");
+    content.push_str("    value:\n");
+    if mapping.has_param("sigma") {
+        content.push_str("      - {param: sigma}\n");
+    }
+    if mapping.has_param("sigma_allow") {
+        content.push_str("      - {limit: sigma_allow}\n");
+    }
+    content.push_str("  message: \"椭圆封头应力 {actual} MPa 超过许用应力 {expected} MPa\"\n");
+    
+    Ok(("7-封头.yaml".to_string(), content))
+}
+
+/// 生成法兰规则
+fn generate_flange_rules(_mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.3-9 法兰 —— 合规规则\n\n");
+    content.push_str("# (待补充)\n");
+    
+    Ok(("9-法兰.yaml".to_string(), content))
+}
+
+/// 生成焊接规则
+fn generate_welding_rules(_mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.4-7 焊接 —— 合规规则\n\n");
+    content.push_str("# (待补充)\n");
+    
+    Ok(("7-焊接.yaml".to_string(), content))
+}
+
+/// 生成NDT规则
+fn generate_ndt_rules(_mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.4-10 无损检测 —— 合规规则\n\n");
+    content.push_str("# (待补充)\n");
+    
+    Ok(("10-无损检测.yaml".to_string(), content))
+}
+
+/// 生成耐压试验规则
+fn generate_pressure_test_rules(_mapping: &ParamMapping) -> anyhow::Result<(String, String)> {
+    let mut content = String::new();
+    
+    content.push_str("# GB150.4-11 耐压试验 —— 合规规则\n\n");
+    content.push_str("# (待补充)\n");
+    
+    Ok(("11-耐压试验.yaml".to_string(), content))
+}

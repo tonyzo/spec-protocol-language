@@ -1,0 +1,49 @@
+- id: GB150.4-7.PWHT_carbon
+  clause: 7.3 / 表 7-1
+  severity: error
+  applicability:
+    type: and
+    value:
+    - type: eq
+      value:
+      - attr: element_type
+      - 内压圆筒
+    - type: eq
+      value:
+      - attr: material_category
+      - 碳钢
+  assertion:
+    type: when
+    value:
+      cond:
+        type: gt
+        value:
+        - param: delta
+        - 38.0
+      then:
+        type: exists
+        value:
+          attr: pwht_done
+  message: 壁厚 > 38mm 的碳钢元件未记录焊后热处理
+- id: GB150.4-9.NDT_ratio
+  clause: '9.2'
+  severity: warning
+  applicability:
+    type: eq
+    value:
+    - attr: element_type
+    - 内压圆筒
+  assertion:
+    type: when
+    value:
+      cond:
+        type: ge
+        value:
+        - param: design_pressure
+        - 1.6
+      then:
+        type: ge
+        value:
+        - param: rt_ratio
+        - 20.0
+  message: 设计压力 ≥ 1.6MPa 时 RT 检测比例应 ≥ 20%，实际为 {actual}%

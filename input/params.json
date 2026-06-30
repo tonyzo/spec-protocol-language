@@ -1,0 +1,25 @@
+{
+  "context": {
+    "element_id": "vessel.V-101.shell",
+    "element_type": "内压圆筒",
+    "standard": "GB/T 150.3-2024"
+  },
+  "parameter_table": {
+    "parameters": {
+      "delta": { "value": 16.0, "unit": "mm" },
+      "sigma": { "value": 120.0, "unit": "MPa" },
+      "phi": { "value": 0.85, "unit": "" },
+      "design_pressure": { "value": 2.5, "unit": "MPa" },
+      "rt_ratio": { "value": 25.0, "unit": "%" }
+    },
+    "limits": {
+      "delta_min": { "value": 12.0, "unit": "mm" },
+      "sigma_allow": { "value": 163.0, "unit": "MPa" }
+    },
+    "attrs": {
+      "element_type": "内压圆筒",
+      "material_category": "碳钢",
+      "pwht_done": "true"
+    }
+  }
+}

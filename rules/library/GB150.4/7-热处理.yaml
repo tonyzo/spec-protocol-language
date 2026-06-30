@@ -1,0 +1,32 @@
+# GB150.4-2024 第7章 焊后热处理 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 碳钢焊后热处理条件触发 (GB150.4 表 7-1) ───
+# 当 δ > 38mm 时，要求进行焊后热处理 (PWHT)
+- id: GB150.4-7.PWHT_carbon
+  clause: "7.3 / 表 7-1"
+  severity: error
+  applicability:
+    type: and
+    value:
+      - type: eq
+        value:
+          - {attr: element_type}
+          - "内压圆筒"
+      - type: eq
+        value:
+          - {attr: material_category}
+          - "碳钢"
+  assertion:
+    type: when
+    value:
+      cond:
+        type: gt
+        value:
+          - {param: delta}
+          - 38
+      then:
+        type: exists
+        value: {attr: pwht_done}
+  message: "壁厚 > 38mm 的碳钢元件未记录焊后热处理"

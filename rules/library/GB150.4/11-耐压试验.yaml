@@ -1,0 +1,96 @@
+# GB150.4-2024 第11章 耐压试验 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：液压试验压力校核 (GB150.4 11.4.3) ───
+# p_T = 1.25p · [σ]/[σ]^t (且 ≥ 1.25p)
+- id: GB150.4-11.3.hydro_test_pressure
+  clause: "11.4.3"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: test_type}
+      - "液压试验"
+  assertion:
+    type: ge
+    value:
+      - {param: test_pressure_actual}
+      - {limit: test_pressure_required}
+  message: "液压试验压力 {actual} MPa 小于要求值 {expected} MPa"
+
+# ─── 规则 2：气压试验压力校核 (GB150.4 11.4.4) ───
+# p_T = 1.10p · [σ]/[σ]^t
+- id: GB150.4-11.4.pneumatic_test_pressure
+  clause: "11.4.4"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: test_type}
+      - "气压试验"
+  assertion:
+    type: ge
+    value:
+      - {param: test_pressure_actual}
+      - {limit: test_pressure_required}
+  message: "气压试验压力 {actual} MPa 小于要求值 {expected} MPa"
+
+# ─── 规则 3：试验温度校核 (GB150.4 11.4.2.3) ───
+# 液体温度 ≥ 5°C 且 < 沸点
+- id: GB150.4-11.2.test_temp_limit
+  clause: "11.4.2.3"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: test_type}
+      - "液压试验"
+  assertion:
+    type: and
+    value:
+      - type: ge
+        value:
+          - {param: test_fluid_temp}
+          - 5
+      - type: lt
+        value:
+          - {param: test_fluid_temp}
+          - {limit: fluid_boiling_point}
+  message: "液压试验液体温度 {actual}°C 超出允许范围 [5, {expected})°C"
+
+# ─── 规则 4：耐压试验保压时间 (GB150.4 11.4.9) ───
+# 保压时间 ≥ 30 min
+- id: GB150.4-11.4.hold_time_min
+  clause: "11.4.9"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: hold_time}
+  assertion:
+    type: ge
+    value:
+      - {param: hold_time}
+      - 30
+  message: "耐压试验保压时间 {actual} min 小于要求的最小值 30 min"
+
+# ─── 规则 5：泄漏试验触发条件 (GB150.4 11.5.2) ───
+# 介质毒性程度为极度或高度危害时，耐压试验后应进行泄漏试验
+- id: GB150.4-11.5.leak_test_trigger
+  clause: "11.5.2"
+  severity: error
+  applicability:
+    type: or
+    value:
+      - type: eq
+        value:
+          - {attr: medium_toxicity}
+          - "极度危害"
+      - type: eq
+        value:
+          - {attr: medium_toxicity}
+          - "高度危害"
+  assertion:
+    type: exists
+    value: {attr: leak_test_done}
+  message: "介质毒性为{medium_toxicity}，耐压试验后未进行泄漏试验"

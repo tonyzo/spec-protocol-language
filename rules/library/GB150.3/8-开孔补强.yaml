@@ -1,0 +1,71 @@
+# GB150.3-2024 第8章 开孔和开孔补强 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：开孔直径限制 (GB150.3 8.1) ───
+# d ≤ 0.5D (开孔直径 ≤ 0.5倍容器内直径)
+- id: GB150.3-8.1.hole_diameter_limit
+  clause: "8.1"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "开孔"
+  assertion:
+    type: le
+    value:
+      - {param: hole_diameter}
+      - {limit: hole_diameter_max}
+  message: "开孔直径 {actual} mm 超过允许最大值 {expected} mm"
+
+# ─── 规则 2：补强面积校核 (GB150.3 8.5) ───
+# A_actual ≥ A_required (实际补强面积 ≥ 所需补强面积)
+- id: GB150.3-8.5.reinforcement_area
+  clause: "8.5"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "开孔补强"
+  assertion:
+    type: ge
+    value:
+      - {param: area_actual}
+      - {limit: area_required}
+  message: "开孔补强面积 {actual} mm² 小于所需面积 {expected} mm²"
+
+# ─── 规则 3：相邻开孔间距校核 (GB150.3 8.4) ───
+# 两开孔中心距 ≥ d1 + d2 (当不采用多孔补强时)
+- id: GB150.3-8.4.hole_spacing
+  clause: "8.4"
+  severity: warning
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "多孔开孔"
+  assertion:
+    type: ge
+    value:
+      - {param: hole_spacing}
+      - {limit: hole_spacing_min}
+  message: "相邻开孔中心距 {actual} mm 小于推荐值 {expected} mm"
+
+# ─── 规则 4：补强圈厚度校核 (GB150.3 8.6) ───
+# δ_reinforce ≤ 1.5δ_shell
+- id: GB150.3-8.6.reinforce_plate_thickness
+  clause: "8.6"
+  severity: warning
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "补强圈"
+  assertion:
+    type: le
+    value:
+      - {param: reinforce_thickness}
+      - {limit: reinforce_thickness_max}
+  message: "补强圈厚度 {actual} mm 超过壳壁厚度的1.5倍 ({expected} mm)"

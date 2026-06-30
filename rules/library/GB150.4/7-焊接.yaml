@@ -1,0 +1,93 @@
+# GB150.4-2024 第7章 焊接 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：施焊环境湿度校核 (GB150.4 7.1.1) ───
+# 相对湿度 ≤ 90%
+- id: GB150.4-7.1.humidity_limit
+  clause: "7.1.1"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: welding_humidity}
+  assertion:
+    type: le
+    value:
+      - {param: welding_humidity}
+      - 90
+  message: "施焊环境相对湿度 {actual}% 超过允许最大值 90%"
+
+# ─── 规则 2：施焊环境温度校核 (GB150.4 7.1.1) ───
+# T ≥ 0°C (非合金钢、低合金钢)
+- id: GB150.4-7.1.welding_temp_limit
+  clause: "7.1.1"
+  severity: error
+  applicability:
+    type: or
+    value:
+      - type: eq
+        value:
+          - {attr: material_category}
+          - "非合金钢"
+      - type: eq
+        value:
+          - {attr: material_category}
+          - "低合金钢"
+  assertion:
+    type: ge
+    value:
+      - {param: welding_temperature}
+      - 0
+  message: "施焊环境温度 {actual}°C 低于允许最小值 0°C"
+
+# ─── 规则 3：焊接预热温度校核 (GB150.4 7.3.2) ───
+# T_preheat ≥ T_preheat_min (按材料厚度和类型)
+- id: GB150.4-7.2.preheat_temperature
+  clause: "7.3.2"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: preheat_temperature}
+  assertion:
+    type: ge
+    value:
+      - {param: preheat_temperature}
+      - {limit: preheat_temp_min}
+  message: "焊接预热温度 {actual}°C 低于要求的最小值 {expected}°C"
+
+# ─── 规则 4：焊后热处理厚度判定 (GB150.4 表 4) ───
+# δ > δ_PWHT_min 时要求进行 PWHT
+- id: GB150.4-7.3.pwht_thickness_trigger
+  clause: "表 4"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "内压圆筒"
+  assertion:
+    type: when
+    cond:
+      type: gt
+      value:
+        - {param: delta}
+        - {limit: delta_pwht_threshold}
+    then:
+      type: exists
+      value: {attr: pwht_done}
+  message: "壁厚 {actual} mm 超过 PWHT 阈值 {expected} mm，未记录焊后热处理"
+
+# ─── 规则 5：焊接返修次数限制 (GB150.4 7.5.6) ───
+# 同一部位返修 ≤ 2 次
+- id: GB150.4-7.5.repair_count_limit
+  clause: "7.5.6"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: repair_count}
+  assertion:
+    type: le
+    value:
+      - {param: repair_count}
+      - 2
+  message: "同一部位焊接返修次数 {actual} 超过允许最大值 2 次"

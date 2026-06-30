@@ -1,0 +1,128 @@
+# GB150.4-2024 第10章 无损检测 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：全部射线检测触发条件 (GB150.4 10.3.1) ───
+# 满足以下条件之一时要求 100% RT/UT:
+# - 介质毒性程度为极度或高度危害
+# - 设计压力 ≥ 1.6 MPa 且 δ > 30 mm
+- id: GB150.4-10.1.full_ndt_trigger
+  clause: "10.3.1"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "焊接接头"
+  assertion:
+    type: or
+    value:
+      - type: eq
+        value:
+          - {attr: medium_toxicity}
+          - "极度危害"
+      - type: and
+        value:
+          - type: ge
+            value:
+              - {param: design_pressure}
+              - 1.6
+          - type: gt
+            value:
+              - {param: delta}
+              - 30
+    then:
+      type: eq
+      value:
+        - {param: ndt_ratio}
+        - 100
+  message: "满足全部检测条件但 RT/UT 比例 {actual}% < 100%"
+
+# ─── 规则 2：局部射线检测最低比例 (GB150.4 10.3.2) ───
+# RT/UT ≥ 20% (当不要求全部检测时)
+- id: GB150.4-10.2.partial_ndt_min_ratio
+  clause: "10.3.2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "焊接接头"
+  assertion:
+    type: ge
+    value:
+      - {param: ndt_ratio}
+      - 20
+  message: "局部无损检测比例 {actual}% 低于标准最小值 20%"
+
+# ─── 规则 3：射线检测合格级别 (GB150.4 表 5) ───
+# 全部检测: II 级合格; 局部检测: III 级合格
+- id: GB150.4-10.3.rt_quality_level
+  clause: "表 5"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: ndt_method}
+      - "RT"
+  assertion:
+    type: when
+    cond:
+      type: eq
+      value:
+        - {param: ndt_ratio}
+        - 100
+    then:
+      type: le
+      value:
+        - {param: rt_defect_level}
+        - 2
+  message: "全部射线检测缺陷级别 {actual} 级超过允许值 II 级"
+
+# ─── 规则 4：超声检测合格级别 (GB150.4 表 5) ───
+# 全部检测: I 级合格; 局部检测: II 级合格
+- id: GB150.4-10.3.ut_quality_level
+  clause: "表 5"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: ndt_method}
+      - "UT"
+  assertion:
+    type: when
+    cond:
+      type: eq
+      value:
+        - {param: ndt_ratio}
+        - 100
+    then:
+      type: le
+      value:
+        - {param: ut_defect_level}
+        - 1
+  message: "全部超声检测缺陷级别 {actual} 级超过允许值 I 级"
+
+# ─── 规则 5：表面检测触发条件 (GB150.4 10.4) ───
+# 当 RT/UT 发现裂纹时，应进行 MT/PT 表面检测
+- id: GB150.4-10.4.surface_ndt_trigger
+  clause: "10.4"
+  severity: error
+  applicability:
+    type: exists
+    value: {attr: rt_crack_found}
+  assertion:
+    type: when
+    cond:
+      type: eq
+      value:
+        - {attr: rt_crack_found}
+        - "true"
+    then:
+      type: or
+      value:
+        - type: exists
+          value: {attr: mt_done}
+        - type: exists
+          value: {attr: pt_done}
+  message: "射线/超声检测发现裂纹后未进行磁粉/渗透表面检测"

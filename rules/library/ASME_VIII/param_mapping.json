@@ -1,0 +1,387 @@
+{
+  "_schema_version": "1.0",
+  "_description": "ASME VIII Boiler and Pressure Vessels - Parameter Mapping Table",
+  "_standard": "ASME BPVC Section VIII Division 1",
+  
+  "standard_info": {
+    "name": "ASME Boiler and Pressure Vessel Code Section VIII Division 1",
+    "version": "2023",
+    "parts": [
+      "ASME BPVC Section VIII Division 1 - Rules for Construction of Pressure Vessels"
+    ]
+  },
+
+  "terms": [
+    {
+      "term_id": "pressure.design",
+      "standard_term": "Design Pressure",
+      "definition": "The pressure used in the design of a component, together with any coincident static or dynamic loads",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_pressure",
+        "unit": "psi",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-21",
+      "referenced_by": ["ASME_VIII-UG-27", "ASME_VIII-UG-32"],
+      "related_terms": ["pressure.operating", "pressure.calc"],
+      "confidence": "high",
+      "synonyms": ["设计压力"],
+      "note": "ASME uses psi (pounds per square inch), GB150 uses MPa"
+    },
+    {
+      "term_id": "pressure.operating",
+      "standard_term": "Maximum Allowable Working Pressure",
+      "definition": "The maximum gauge pressure permissible at the top of a vessel in its normal operating position",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "MAWP",
+        "unit": "psi",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-98",
+      "referenced_by": ["ASME_VIII-UG-98", "ASME_VIII-UG-99"],
+      "related_terms": ["pressure.design", "pressure.test"],
+      "confidence": "high",
+      "synonyms": ["最高允许工作压力", "MAWP"],
+      "note": "ASME uses MAWP, GB150 uses similar concept"
+    },
+    {
+      "term_id": "pressure.test",
+      "standard_term": "Test Pressure",
+      "definition": "The pressure to which a vessel is subjected during a hydrostatic or pneumatic test",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "test_pressure",
+        "unit": "psi",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-99",
+      "referenced_by": ["ASME_VIII-UG-99", "ASME_VIII-UG-100"],
+      "related_terms": ["pressure.design", "MAWP"],
+      "confidence": "high",
+      "synonyms": ["试验压力"]
+    },
+    {
+      "term_id": "temperature.design",
+      "standard_term": "Design Temperature",
+      "definition": "The temperature of the metal used in the design of a component",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_temperature",
+        "unit": "°F",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-20",
+      "referenced_by": ["ASME_VIII-UG-23", "ASME_VIII-UG-24"],
+      "related_terms": ["temperature.min", "temperature.max"],
+      "confidence": "high",
+      "synonyms": ["设计温度"],
+      "note": "ASME uses °F (Fahrenheit), GB150 uses °C (Celsius)"
+    },
+    {
+      "term_id": "temperature.min",
+      "standard_term": "Minimum Design Metal Temperature",
+      "definition": "The lowest temperature expected in service",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "MDMT",
+        "unit": "°F",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-20",
+      "referenced_by": ["ASME_VIII-UG-20", "ASME_VIII-UCS-66"],
+      "related_terms": ["temperature.design"],
+      "confidence": "high",
+      "synonyms": ["最低设计金属温度", "MDMT"],
+      "note": "ASME uses MDMT for low temperature assessment"
+    },
+    {
+      "term_id": "thickness.required",
+      "standard_term": "Required Thickness",
+      "definition": "The minimum thickness of a component calculated by the design formulas",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "delta_calc",
+        "unit": "in",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-27",
+      "referenced_by": ["ASME_VIII-UG-27", "ASME_VIII-UG-32"],
+      "related_terms": ["thickness.nominal", "corrosion.allowance"],
+      "confidence": "high",
+      "synonyms": ["计算厚度", "所需厚度"],
+      "note": "ASME uses inches, GB150 uses mm"
+    },
+    {
+      "term_id": "thickness.nominal",
+      "standard_term": "Nominal Thickness",
+      "definition": "The thickness to which the material is ordered, including corrosion allowance and mill tolerance",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "delta",
+        "unit": "in",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-25",
+      "referenced_by": ["ASME_VIII-UG-25", "ASME_VIII-UG-27"],
+      "related_terms": ["thickness.required", "thickness.effective"],
+      "confidence": "high",
+      "synonyms": ["名义厚度"],
+      "note": "ASME nominal thickness includes corrosion allowance + mill tolerance"
+    },
+    {
+      "term_id": "thickness.effective",
+      "standard_term": "Effective Thickness",
+      "definition": "The nominal thickness minus corrosion allowance and mill tolerance",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "delta_effective",
+        "unit": "in",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-25",
+      "referenced_by": ["ASME_VIII-UG-25"],
+      "related_terms": ["thickness.nominal", "corrosion.allowance"],
+      "confidence": "high",
+      "synonyms": ["有效厚度"]
+    },
+    {
+      "term_id": "corrosion.allowance",
+      "standard_term": "Corrosion Allowance",
+      "definition": "The additional thickness provided to compensate for corrosion and erosion",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "corrosion_allowance",
+        "unit": "in",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-25",
+      "referenced_by": ["ASME_VIII-UG-25"],
+      "related_terms": ["thickness.nominal", "thickness.effective"],
+      "confidence": "high",
+      "synonyms": ["腐蚀裕量"]
+    },
+    {
+      "term_id": "stress.allow",
+      "standard_term": "Allowable Stress",
+      "definition": "The maximum stress permitted by the code for a given material at a given temperature",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "sigma_allow",
+        "unit": "psi",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-23",
+      "referenced_by": ["ASME_VIII-UG-27", "ASME_VIII-UG-32"],
+      "related_terms": ["stress.calc", "R_m", "R_eL"],
+      "confidence": "high",
+      "synonyms": ["许用应力"],
+      "note": "ASME allowable stress from Section II Part D"
+    },
+    {
+      "term_id": "stress.calc",
+      "standard_term": "Calculated Stress",
+      "definition": "The stress in a component calculated by the design formulas",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "sigma",
+        "unit": "psi",
+        "data_type": "f64"
+      },
+      "source_clause": "UG-27",
+      "referenced_by": ["ASME_VIII-UG-27"],
+      "related_terms": ["stress.allow"],
+      "confidence": "high",
+      "synonyms": ["计算应力"]
+    },
+    {
+      "term_id": "joint.efficiency",
+      "standard_term": "Joint Efficiency",
+      "definition": "A factor less than or equal to 1.0 that accounts for the strength reduction due to welding",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "phi",
+        "unit": null,
+        "data_type": "f64"
+      },
+      "source_clause": "UG-27",
+      "referenced_by": ["ASME_VIII-UG-27", "ASME_VIII-UG-32"],
+      "related_terms": ["ndt_ratio"],
+      "confidence": "high",
+      "synonyms": ["焊接接头系数"],
+      "note": "ASME joint efficiency depends on NDT extent and weld type"
+    },
+    {
+      "term_id": "element.type",
+      "standard_term": "Component Type",
+      "definition": "The type of pressure vessel component",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "element_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "Shell", "Head", "Flange", "Nozzle", "Saddle", "Lug"
+        ]
+      },
+      "source_clause": "UG-1",
+      "referenced_by": ["All ASME VIII rules"],
+      "related_terms": [],
+      "confidence": "high",
+      "synonyms": ["元件类型"]
+    },
+    {
+      "term_id": "material.type",
+      "standard_term": "Material Type",
+      "definition": "The classification of material",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "material_category",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "Carbon Steel", "Low Alloy Steel", "Stainless Steel", "Aluminum", "Copper", "Nickel"
+        ]
+      },
+      "source_clause": "UG-5",
+      "referenced_by": ["ASME_VIII-UCS", "ASME_VIII-UNF", "ASME_VIII-UHA"],
+      "related_terms": ["material.specification"],
+      "confidence": "high",
+      "synonyms": ["材料类别"]
+    },
+    {
+      "term_id": "material.specification",
+      "standard_term": "Material Specification",
+      "definition": "The ASTM or ASME material specification",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "material_grade",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "SA-516 Gr.70", "SA-240 Type 304", "SA-240 Type 316", "SA-106 Gr.B"
+        ]
+      },
+      "source_clause": "UG-5",
+      "referenced_by": ["ASME_VIII-material rules"],
+      "related_terms": ["material.type"],
+      "confidence": "high",
+      "synonyms": ["材料牌号"]
+    },
+    {
+      "term_id": "ndt.extent",
+      "standard_term": "NDE Extent",
+      "definition": "The extent of non-destructive examination",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "ndt_ratio",
+        "unit": "%",
+        "data_type": "f64"
+      },
+      "source_clause": "UW-11",
+      "referenced_by": ["ASME_VIII-UW-11", "ASME_VIII-UW-12"],
+      "related_terms": ["joint.efficiency"],
+      "confidence": "high",
+      "synonyms": ["无损检测比例"],
+      "note": "ASME uses Full (100%), Spot (partial), or None"
+    },
+    {
+      "term_id": "test.type",
+      "standard_term": "Test Type",
+      "definition": "The type of pressure test",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "test_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "Hydrostatic", "Pneumatic", "Combined Hydrostatic-Pneumatic"
+        ]
+      },
+      "source_clause": "UG-99",
+      "referenced_by": ["ASME_VIII-UG-99", "ASME_VIII-UG-100"],
+      "related_terms": ["test_pressure"],
+      "confidence": "high",
+      "synonyms": ["试验类型"]
+    }
+  ],
+
+  "parameter_groups": {
+    "design": [
+      "design_pressure",
+      "design_temperature",
+      "MAWP",
+      "test_pressure"
+    ],
+    "geometry": [
+      "D_i",
+      "D_o",
+      "delta",
+      "delta_effective",
+      "corrosion_allowance"
+    ],
+    "stress": [
+      "sigma",
+      "sigma_allow",
+      "sigma_hoop",
+      "sigma_longitudinal"
+    ],
+    "limits": [
+      "delta_calc",
+      "MAWP",
+      "pressure_allow"
+    ],
+    "material": [
+      "R_m",
+      "R_eL",
+      "E_t"
+    ],
+    "welding_ndt": [
+      "phi",
+      "ndt_ratio",
+      "weld_joint_type"
+    ],
+    "test": [
+      "test_pressure_actual",
+      "hold_time"
+    ],
+    "attrs": [
+      "element_type",
+      "material_category",
+      "material_grade",
+      "test_type"
+    ]
+  },
+
+  "cross_references": {
+    "ASME_VIII→GB150": {
+      "description": "ASME VIII and GB150 have similar concepts but different units",
+      "terms": [
+        "design_pressure (psi vs MPa)",
+        "design_temperature (°F vs °C)",
+        "thickness (in vs mm)",
+        "stress (psi vs MPa)"
+      ]
+    },
+    "ASME_VIII→ASME_II": {
+      "description": "ASME VIII references ASME Section II for material properties",
+      "terms": ["sigma_allow", "R_m", "R_eL"]
+    }
+  },
+
+  "validation_rules": [
+    {
+      "rule": "All parameters must have unit field",
+      "check": "terms[*].spec_mapping.type=='parameter' implies spec_mapping.unit != null"
+    },
+    {
+      "rule": "All limits must have unit field",
+      "check": "terms[*].spec_mapping.type=='limit' implies spec_mapping.unit != null"
+    },
+    {
+      "rule": "Attrs cannot have unit",
+      "check": "terms[*].spec_mapping.type=='attr' implies spec_mapping.unit == null"
+    }
+  ]
+}

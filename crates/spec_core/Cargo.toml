@@ -1,0 +1,15 @@
+[package]
+name = "spec_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "SPEC Protocol compliance engine core — GB150 rule matching for pressure vessel design"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+thiserror = "1"
+
+[dev-dependencies]
+# 内联测试使用以上依赖，无需额外 dev-deps

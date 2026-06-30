@@ -1,0 +1,28 @@
+# GB150.4-2024 第9章 无损检测 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 无损检测比例校验 (GB150.4 第9章) ───
+# 当设计压力 ≥ 1.6 MPa 时，RT 检测比例 ≥ 20%
+- id: GB150.4-9.NDT_ratio
+  clause: "9.2"
+  severity: warning
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "内压圆筒"
+  assertion:
+    type: when
+    value:
+      cond:
+        type: ge
+        value:
+          - {param: design_pressure}
+          - 1.6
+      then:
+        type: ge
+        value:
+          - {param: rt_ratio}
+          - 20
+  message: "设计压力 ≥ 1.6MPa 时 RT 检测比例应 ≥ 20%，实际为 {actual}%"

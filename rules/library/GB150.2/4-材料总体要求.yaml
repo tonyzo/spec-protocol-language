@@ -1,0 +1,123 @@
+# GB150.2-2024 第4章 材料总体要求 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：材料使用温度上限校核 (GB150.2 4.9) ───
+# T_design ≤ T_allow_max (按许用应力表)
+- id: GB150.2-4.9.temp_upper_limit
+  clause: "4.9"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: design_temperature}
+  assertion:
+    type: le
+    value:
+      - {param: design_temperature}
+      - {limit: temp_allow_max}
+  message: "设计温度 {actual}°C 超过材料允许使用温度上限 {expected}°C"
+
+# ─── 规则 2：材料使用温度下限校核 (GB150.2 4.10) ───
+# T_design ≥ T_allow_min (按材料类型)
+- id: GB150.2-4.10.temp_lower_limit
+  clause: "4.10"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: design_temperature}
+  assertion:
+    type: ge
+    value:
+      - {param: design_temperature}
+      - {limit: temp_allow_min}
+  message: "设计温度 {actual}°C 低于材料允许使用温度下限 {expected}°C"
+
+# ─── 规则 3：碳锰钢高温石墨化警示 (GB150.2 4.9.b) ───
+# T > 425°C 时注意石墨化倾向
+- id: GB150.2-4.9.graphitization_warning
+  clause: "4.9 b)"
+  severity: warning
+  applicability:
+    type: or
+    value:
+      - type: eq
+        value:
+          - {attr: material_category}
+          - "非合金钢"
+      - type: eq
+        value:
+          - {attr: material_category}
+          - "碳锰钢"
+  assertion:
+    type: when
+    cond:
+      type: gt
+      value:
+        - {param: design_temperature}
+        - 425
+    then:
+      type: exists
+      value: {attr: graphitization_checked}
+  message: "碳锰钢在 {actual}°C > 425°C 长期使用需评估石墨化倾向"
+
+# ─── 规则 4：奥氏体不锈钢高温含碳量要求 (GB150.2 4.9.c) ───
+# T > 525°C 时 C ≥ 0.04%
+- id: GB150.2-4.9.austenitic_carbon
+  clause: "4.9 c)"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: material_category}
+      - "奥氏体不锈钢"
+  assertion:
+    type: when
+    cond:
+      type: gt
+      value:
+        - {param: design_temperature}
+        - 525
+    then:
+      type: ge
+      value:
+        - {param: carbon_content}
+        - 0.04
+  message: "奥氏体不锈钢在 {actual}°C > 525°C 使用时含碳量应 ≥ 0.04%，实际为 {expected}%"
+
+# ─── 规则 5：材料冲击韧性校核 (GB150.2 表 1) ───
+# KV2 ≥ KV2_allow (按材料强度等级)
+- id: GB150.2-4.11.impact_toughness
+  clause: "表 1"
+  severity: error
+  applicability:
+    type: exists
+    value: {param: impact_energy}
+  assertion:
+    type: ge
+    value:
+      - {param: impact_energy}
+      - {limit: impact_energy_allow}
+  message: "材料冲击吸收能量 {actual} J 低于标准要求 {expected} J"
+
+# ─── 规则 6：双相不锈钢相比例校核 (GB150.2 4.13) ───
+# 奥氏体含量 40% ~ 60%
+- id: GB150.2-4.13.phase_ratio
+  clause: "4.13"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: material_category}
+      - "奥氏体-铁素体双相不锈钢"
+  assertion:
+    type: and
+    value:
+      - type: ge
+        value:
+          - {param: austenite_content}
+          - 40
+      - type: le
+        value:
+          - {param: austenite_content}
+          - 60
+  message: "双相不锈钢奥氏体含量 {actual}% 超出允许范围 [40, 60]%"

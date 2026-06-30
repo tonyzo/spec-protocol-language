@@ -1,0 +1,17 @@
+# GB150.3-6 外压圆筒和球壳 —— 合规规则
+
+# ─── 规则 1：外压稳定性校核 (GB150.3 6.3.2) ───
+# p_calc ≤ p_allow
+- id: GB150.3-6.3.stability
+  clause: "6.3.2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "外压圆筒"
+  assertion:
+    type: le
+    value:
+      - {param: calc_pressure}
+  message: "计算外压 {actual} MPa 超过许用外压 {expected} MPa"

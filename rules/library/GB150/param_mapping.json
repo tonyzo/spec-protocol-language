@@ -1,0 +1,610 @@
+{
+  "_schema_version": "1.0",
+  "_description": "GB150 参数映射表 - 术语与SPEC Protocol参数的映射关系",
+  "_standard": "GB/T 150.1~150.4-2024",
+  
+  "standard_info": {
+    "name": "GB/T 150 压力容器",
+    "version": "2024",
+    "parts": [
+      "GB/T 150.1-2024 通用要求",
+      "GB/T 150.2-2024 材料",
+      "GB/T 150.3-2024 设计",
+      "GB/T 150.4-2024 制造、检验和验收"
+    ]
+  },
+
+  "terms": [
+    {
+      "term_id": "pressure.operating",
+      "standard_term": "工作压力",
+      "definition": "正常工作情况下,容器顶部可能达到的最高压力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "operating_pressure",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.3",
+      "referenced_by": ["GB150.1-1.2"],
+      "related_terms": ["pressure.design", "pressure.calc"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "pressure.design",
+      "standard_term": "设计压力",
+      "definition": "设定的容器顶部的最高压力,不低于工作压力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_pressure",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.4",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-5.4", "GB150.3-6.3", "GB150.4-11.4.3"],
+      "related_terms": ["pressure.operating", "pressure.calc", "pressure.test"],
+      "confidence": "high",
+      "note": "设计压力是GB150的核心参数,几乎所有设计计算都依赖此值"
+    },
+    {
+      "term_id": "pressure.calc",
+      "standard_term": "计算压力",
+      "definition": "在相应设计温度下,用以确定元件厚度的压力(包括液柱静压力等)",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "calc_pressure",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.5",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-6.3"],
+      "related_terms": ["pressure.design", "pressure.operating"],
+      "confidence": "high",
+      "note": "计算压力=设计压力+液柱静压力(当液柱静压力>5%设计压力时)"
+    },
+    {
+      "term_id": "pressure.test",
+      "standard_term": "试验压力",
+      "definition": "进行耐压试验时,容器顶部的压力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "test_pressure",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.6",
+      "referenced_by": ["GB150.4-11.4.3", "GB150.4-11.4.4"],
+      "related_terms": ["pressure.design", "test_pressure_actual", "test_pressure_required"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "pressure.MAWP",
+      "standard_term": "最高允许工作压力",
+      "definition": "在指定温度下,容器顶部允许承受的最大压力(根据有效厚度计算)",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "MAWP",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.7",
+      "referenced_by": ["GB150.1-3.1.7", "GB150.3-5.3"],
+      "related_terms": ["pressure.design", "delta_effective"],
+      "confidence": "high",
+      "note": "MAWP由计算软件根据有效厚度反算,SPEC不做计算"
+    },
+    {
+      "term_id": "temperature.design",
+      "standard_term": "设计温度",
+      "definition": "容器在正常工作情况下,设定的元件金属温度(沿截面平均值)",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "design_temperature",
+        "unit": "°C",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.8",
+      "referenced_by": ["GB150.2-4.9", "GB150.2-4.10", "GB150.3-5.3", "GB150.3-6.3"],
+      "related_terms": ["temperature.max", "temperature.min", "temperature.test"],
+      "confidence": "high",
+      "note": "设计温度决定材料的许用应力,是材料选择的关键参数"
+    },
+    {
+      "term_id": "temperature.max",
+      "standard_term": "最高设计温度",
+      "definition": "设计温度的上限值",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "temp_allow_max",
+        "unit": "°C",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.2 4.9",
+      "referenced_by": ["GB150.2-4.9"],
+      "related_terms": ["temperature.design"],
+      "confidence": "high",
+      "note": "不同材料有不同的最高使用温度,如碳钢≤450°C,奥氏体不锈钢≤700°C"
+    },
+    {
+      "term_id": "temperature.min",
+      "standard_term": "最低设计温度",
+      "definition": "设计温度的下限值",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "temp_allow_min",
+        "unit": "°C",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.2 4.10",
+      "referenced_by": ["GB150.2-4.10", "GB150.1-3.1.15"],
+      "related_terms": ["temperature.design"],
+      "confidence": "high",
+      "note": "T<-20°C为低温容器,需满足低温冲击韧性要求"
+    },
+    {
+      "term_id": "temperature.test",
+      "standard_term": "试验温度",
+      "definition": "进行耐压试验时,容器壳体的金属温度",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "test_temperature",
+        "unit": "°C",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.9",
+      "referenced_by": ["GB150.4-11.4.2.3"],
+      "related_terms": ["temperature.design", "test_fluid_temp"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "thickness.calc",
+      "standard_term": "计算厚度",
+      "definition": "按公式计算得到的厚度(对外压元件,指满足稳定性要求的最小厚度)",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "delta_calc",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.10",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-5.4", "GB150.3-6.3", "GB150.3-7.3"],
+      "related_terms": ["thickness.design", "thickness.nominal", "thickness.effective"],
+      "confidence": "high",
+      "note": "计算厚度是理论最小值,需加上腐蚀裕量得到设计厚度"
+    },
+    {
+      "term_id": "thickness.design",
+      "standard_term": "设计厚度",
+      "definition": "计算厚度 + 腐蚀裕量",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "delta_design",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.11",
+      "referenced_by": ["GB150.3-5.3"],
+      "related_terms": ["thickness.calc", "thickness.nominal", "corrosion_allowance"],
+      "confidence": "high",
+      "note": "设计厚度=计算厚度+腐蚀裕量,是确定名义厚度的基础"
+    },
+    {
+      "term_id": "thickness.nominal",
+      "standard_term": "名义厚度",
+      "definition": "设计厚度 + 材料厚度负偏差后向上圆整至标准规格",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "delta",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.12",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-5.4", "GB150.3-6.3", "GB150.4-7.3", "GB150.4-10.3.1"],
+      "related_terms": ["thickness.calc", "thickness.design", "thickness.effective"],
+      "confidence": "high",
+      "note": "规则中简写为delta,完整术语为名义厚度。是制造检验的核心参数"
+    },
+    {
+      "term_id": "thickness.effective",
+      "standard_term": "有效厚度",
+      "definition": "名义厚度 - 腐蚀裕量 - 材料厚度负偏差",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "delta_effective",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.13",
+      "referenced_by": ["GB150.3-5.3", "GB150.1-3.1.7"],
+      "related_terms": ["thickness.nominal", "corrosion_allowance", "MAWP"],
+      "confidence": "high",
+      "note": "有效厚度用于计算MAWP(最高允许工作压力)"
+    },
+    {
+      "term_id": "thickness.min_fab",
+      "standard_term": "最小成形厚度",
+      "definition": "受压元件成形后保证设计要求的最小厚度",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "delta_min_fab",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "3.1.14",
+      "referenced_by": ["GB150.4-制造检验"],
+      "related_terms": ["thickness.design", "thickness.nominal"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "thickness.min",
+      "standard_term": "最小壁厚",
+      "definition": "计算得到的最小允许壁厚",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "delta_min",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "多处",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-5.4"],
+      "related_terms": ["delta_calc", "delta_design"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "corrosion.allowance",
+      "standard_term": "腐蚀裕量",
+      "definition": "考虑材料在使用过程中的腐蚀而增加的厚度",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "corrosion_allowance",
+        "unit": "mm",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.3 4.2",
+      "referenced_by": ["GB150.3-5.3"],
+      "related_terms": ["thickness.design", "thickness.nominal"],
+      "confidence": "high",
+      "note": "腐蚀裕量由设计人员根据介质腐蚀性确定,通常为1~3mm"
+    },
+    {
+      "term_id": "stress.allow",
+      "standard_term": "许用应力",
+      "definition": "设计温度下材料的许用应力(按GB150.2)",
+      "spec_mapping": {
+        "type": "limit",
+        "name": "sigma_allow",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "5.2.2",
+      "referenced_by": ["GB150.3-5.3", "GB150.3-5.4", "GB150.3-7.3", "GB150.3-7.4", "GB150.3-9.5", "GB150.4-11.4.3"],
+      "related_terms": ["stress.calc", "stress.theta", "R_m", "R_eL_t"],
+      "confidence": "high",
+      "note": "许用应力由计算软件查GB150.2附录C提供,SPEC不查表"
+    },
+    {
+      "term_id": "stress.calc",
+      "standard_term": "计算应力",
+      "definition": "设计温度下圆筒或球壳的计算应力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "sigma",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "5.2.2",
+      "referenced_by": ["GB150.3-5.3"],
+      "related_terms": ["stress.allow", "stress.theta"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "stress.theta",
+      "standard_term": "环向应力",
+      "definition": "设计温度下圆筒的环向应力",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "sigma_theta",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "5.2.2",
+      "referenced_by": ["GB150.3-5.3"],
+      "related_terms": ["stress.calc", "stress.allow"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "stress.axial",
+      "standard_term": "轴向应力",
+      "definition": "法兰设计中的轴向应力分量",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "sigma_axial",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.3 9.5",
+      "referenced_by": ["GB150.3-9.5"],
+      "related_terms": ["stress.allow", "stress.radial"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "stress.radial",
+      "standard_term": "径向应力",
+      "definition": "法兰设计中的径向应力分量",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "sigma_radial",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.3 9.5",
+      "referenced_by": ["GB150.3-9.5"],
+      "related_terms": ["stress.allow", "stress.axial"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "stress.shear",
+      "standard_term": "剪应力",
+      "definition": "法兰设计中的剪应力分量",
+      "spec_mapping": {
+        "type": "parameter",
+        "name": "tau",
+        "unit": "MPa",
+        "data_type": "f64"
+      },
+      "source_clause": "GB150.3 9.5",
+      "referenced_by": ["GB150.3-9.5"],
+      "related_terms": ["stress.allow"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "element.type",
+      "standard_term": "元件类型",
+      "definition": "压力容器的组成元件(圆筒/球壳/封头/法兰等)",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "element_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "内压圆筒", "外压圆筒", "内压球壳", "外压球壳",
+          "椭圆形封头", "碟形封头", "锥壳", "平盖",
+          "法兰", "开孔", "开孔补强", "焊接接头"
+        ]
+      },
+      "source_clause": "多处",
+      "referenced_by": ["所有审查点"],
+      "related_terms": ["container.type"],
+      "confidence": "high",
+      "note": "分类属性,用于适用性筛选(applicability)"
+    },
+    {
+      "term_id": "container.type",
+      "standard_term": "容器类型",
+      "definition": "压力容器的结构类型",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "container_type",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "单层容器", "多层包扎容器", "套合容器", "钢带错绕容器", "夹套容器"
+        ]
+      },
+      "source_clause": "GB150.1 3.1.1",
+      "referenced_by": ["GB150.3-5.3"],
+      "related_terms": ["element.type"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "medium.toxicity",
+      "standard_term": "介质毒性程度",
+      "definition": "按GB5044划分的介质毒性危害程度",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "medium_toxicity",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["极度危害", "高度危害", "中度危害", "轻度危害"]
+      },
+      "source_clause": "GB150.4 10.3.1",
+      "referenced_by": ["GB150.4-10.1", "GB150.4-11.5"],
+      "related_terms": ["medium.flammability"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "medium.flammability",
+      "standard_term": "介质易燃性",
+      "definition": "介质的易燃性分类",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "medium_flammability",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["易燃", "非易燃"]
+      },
+      "source_clause": "GB150.4",
+      "referenced_by": ["GB150.4-安全规则"],
+      "related_terms": ["medium.toxicity"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "material.category",
+      "standard_term": "材料类别",
+      "definition": "材料的分类",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "material_category",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": [
+          "非合金钢", "低合金钢", "高合金钢", "奥氏体不锈钢",
+          "铁素体不锈钢", "双相不锈钢", "碳钢", "碳锰钢", "耐热钢", "低温钢"
+        ]
+      },
+      "source_clause": "GB150.2",
+      "referenced_by": ["GB150.2-4.9", "GB150.2-4.10", "GB150.4-7.1"],
+      "related_terms": ["material.grade"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "material.grade",
+      "standard_term": "材料牌号",
+      "definition": "材料的具体牌号",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "material_grade",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["Q245R", "Q345R", "Q370R", "16MnDR", "S30408", "S31603"]
+      },
+      "source_clause": "GB150.2",
+      "referenced_by": ["GB150.2-材料规则"],
+      "related_terms": ["material.category"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "status.pwht",
+      "standard_term": "焊后热处理状态",
+      "definition": "是否进行了焊后热处理",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "pwht_done",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["true", "false"]
+      },
+      "source_clause": "GB150.4 7.3",
+      "referenced_by": ["GB150.4-7.3"],
+      "related_terms": ["thickness.nominal"],
+      "confidence": "high"
+    },
+    {
+      "term_id": "status.leak_test",
+      "standard_term": "泄漏试验状态",
+      "definition": "是否进行了泄漏试验",
+      "spec_mapping": {
+        "type": "attr",
+        "name": "leak_test_done",
+        "unit": null,
+        "data_type": "string",
+        "allowed_values": ["true", "false"]
+      },
+      "source_clause": "GB150.4 11.5",
+      "referenced_by": ["GB150.4-11.5"],
+      "related_terms": ["medium.toxicity"],
+      "confidence": "high"
+    }
+  ],
+
+  "parameter_groups": {
+    "design": [
+      "design_pressure",
+      "design_temperature",
+      "operating_pressure",
+      "calc_pressure"
+    ],
+    "geometry": [
+      "D_i",
+      "D_o",
+      "delta",
+      "delta_effective",
+      "calc_length",
+      "K_ratio"
+    ],
+    "stress": [
+      "sigma",
+      "sigma_theta",
+      "sigma_allow",
+      "sigma_axial",
+      "sigma_radial",
+      "tau"
+    ],
+    "limits": [
+      "delta_min",
+      "delta_calc",
+      "MAWP",
+      "pressure_allow",
+      "I_required",
+      "A_required",
+      "test_pressure_required"
+    ],
+    "material": [
+      "R_m",
+      "R_eL",
+      "R_eL_t",
+      "E_t",
+      "KV2",
+      "carbon_content"
+    ],
+    "welding_ndt": [
+      "phi",
+      "ndt_ratio",
+      "rt_defect_level",
+      "ut_defect_level",
+      "welding_temperature",
+      "preheat_temperature",
+      "repair_count"
+    ],
+    "test": [
+      "test_pressure_actual",
+      "test_fluid_temp",
+      "hold_time",
+      "leak_rate"
+    ],
+    "attrs": [
+      "element_type",
+      "container_type",
+      "material_category",
+      "medium_toxicity",
+      "pwht_done",
+      "leak_test_done"
+    ]
+  },
+
+  "cross_references": {
+    "GB150.1→GB150.2": {
+      "description": "通用要求引用材料温度范围",
+      "terms": ["design_temperature", "temp_allow_max", "temp_allow_min"]
+    },
+    "GB150.1→GB150.3": {
+      "description": "通用要求引用设计压力计算",
+      "terms": ["design_pressure", "calc_pressure", "MAWP"]
+    },
+    "GB150.3→GB150.2": {
+      "description": "设计计算引用许用应力",
+      "terms": ["sigma_allow", "R_m", "R_eL", "E_t"]
+    },
+    "GB150.3→GB150.4": {
+      "description": "设计参数用于制造检验判定",
+      "terms": ["design_pressure", "delta", "medium_toxicity"]
+    },
+    "GB150.4→GB150.3": {
+      "description": "制造检验引用设计参数",
+      "terms": ["design_pressure", "delta", "test_pressure_required"]
+    }
+  },
+
+  "validation_rules": [
+    {
+      "rule": "所有parameters必须携带unit字段",
+      "check": "terms[*].spec_mapping.type=='parameter' implies spec_mapping.unit != null"
+    },
+    {
+      "rule": "所有limits必须携带unit字段",
+      "check": "terms[*].spec_mapping.type=='limit' implies spec_mapping.unit != null"
+    },
+    {
+      "rule": "attrs类型不能有unit",
+      "check": "terms[*].spec_mapping.type=='attr' implies spec_mapping.unit == null"
+    },
+    {
+      "rule": "术语必须有source_clause",
+      "check": "terms[*].source_clause != null"
+    },
+    {
+      "rule": "confidence必须是high/medium/low之一",
+      "check": "terms[*].confidence in ['high', 'medium', 'low']"
+    }
+  ]
+}

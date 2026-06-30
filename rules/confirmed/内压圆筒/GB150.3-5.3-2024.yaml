@@ -1,0 +1,48 @@
+- id: GB150.3-5.3.sigma
+  clause: 5.3 / 公式 5-5
+  severity: error
+  applicability:
+    type: eq
+    value:
+    - attr: element_type
+    - 内压圆筒
+  assertion:
+    type: le
+    value:
+    - param: sigma
+    - limit: sigma_allow
+  message: 环向应力 {actual} MPa 超过许用应力 {expected} MPa
+- id: GB150.3-5.3.delta_min
+  clause: 5.3 / 公式 5-1
+  severity: error
+  applicability:
+    type: eq
+    value:
+    - attr: element_type
+    - 内压圆筒
+  assertion:
+    type: ge
+    value:
+    - param: delta
+    - limit: delta_min
+  message: 壁厚 {actual} mm 小于计算最小壁厚 {expected} mm
+- id: GB150.3-5.3.phi_range
+  clause: '5.3'
+  severity: error
+  applicability:
+    type: eq
+    value:
+    - attr: element_type
+    - 内压圆筒
+  assertion:
+    type: and
+    value:
+    - type: ge
+      value:
+      - param: phi
+      - 0.25
+    - type: le
+      value:
+      - param: phi
+      - 1.0
+  message: 焊接接头系数 {actual} 超出允许范围 [0.25, 1.0]

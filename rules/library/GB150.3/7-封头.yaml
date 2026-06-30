@@ -1,0 +1,18 @@
+# GB150.3-7 封头 —— 合规规则
+
+# ─── 规则 1：椭圆封头应力校核 (GB150.3 7.3.2) ───
+# σ ≤ [σ]^t · φ
+- id: GB150.3-7.3.elliptical_stress
+  clause: "7.3.2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "椭圆形封头"
+  assertion:
+    type: le
+    value:
+      - {param: sigma}
+      - {limit: sigma_allow}
+  message: "椭圆封头应力 {actual} MPa 超过许用应力 {expected} MPa"

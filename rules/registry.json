@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "design_types": {
+    "内压圆筒": [
+      {
+        "standard": "GB150.3",
+        "clause": "5.3",
+        "file_path": "GB150.3-5.3-2024.yaml",
+        "rule_count": 3,
+        "confirmed_at": "epoch:1782720580"
+      },
+      {
+        "standard": "GB150.4",
+        "clause": "7.3",
+        "file_path": "GB150.4-7.3-2024.yaml",
+        "rule_count": 2,
+        "confirmed_at": "epoch:1782720580"
+      }
+    ]
+  }
+}

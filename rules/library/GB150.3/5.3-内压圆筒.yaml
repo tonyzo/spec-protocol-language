@@ -1,0 +1,58 @@
+# GB150.3-5.3 内压圆筒 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：环向应力校核 (GB150.3 公式 5-5) ───
+# σθ ≤ [σ]^t · φ
+- id: GB150.3-5.3.sigma
+  clause: "5.3 / 公式 5-5"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "内压圆筒"
+  assertion:
+    type: le
+    value:
+      - {param: sigma}
+      - {limit: sigma_allow}
+  message: "环向应力 {actual} MPa 超过许用应力 {expected} MPa"
+
+# ─── 规则 2：最小壁厚校核 (GB150.3 5.3) ───
+# δ ≥ δ_min
+- id: GB150.3-5.3.delta_min
+  clause: "5.3"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "内压圆筒"
+  assertion:
+    type: ge
+    value:
+      - {param: delta}
+      - {limit: delta_min}
+  message: "壁厚 {actual} mm 小于最小允许壁厚 {expected} mm"
+
+# ─── 规则 3：焊接系数范围 (GB150.3 表 2) ───
+# 0 < φ ≤ 1.0
+- id: GB150.3-5.3.phi_range
+  clause: "表 2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "内压圆筒"
+  assertion:
+    type: and
+    value:
+      - type: gt
+        value:
+          - 0
+      - type: le
+        value:
+          - 1.0
+  message: "焊接接头系数 {actual} 超出允许范围 (0, 1.0]"

@@ -1,0 +1,54 @@
+# GB150.3-2024 第5章 球壳 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+
+# ─── 规则 1：球壳应力校核 (GB150.3 公式 5-13) ───
+# σ ≤ [σ]^t · φ
+- id: GB150.3-5.4.sigma_sphere
+  clause: "5.4 / 公式 5-13"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "球壳"
+  assertion:
+    type: le
+    value:
+      - {param: sigma}
+      - {limit: sigma_allow}
+  message: "球壳计算应力 {actual} MPa 超过许用应力 {expected} MPa"
+
+# ─── 规则 2：球壳最小壁厚校核 (GB150.3 公式 5-9) ───
+# δ ≥ δ_min
+- id: GB150.3-5.4.delta_min_sphere
+  clause: "5.4 / 公式 5-9"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "球壳"
+  assertion:
+    type: ge
+    value:
+      - {param: delta}
+      - {limit: delta_min}
+  message: "球壳壁厚 {actual} mm 小于计算最小壁厚 {expected} mm"
+
+# ─── 规则 3：球壳公式适用范围校核 ───
+# K ≤ 1.35 或 p_c ≤ 0.6[σ]^t·φ
+- id: GB150.3-5.4.k_ratio_limit
+  clause: "5.4"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "球壳"
+  assertion:
+    type: le
+    value:
+      - {param: k_ratio}
+      - 1.35
+  message: "球壳径比 K={actual} 超过公式适用范围 1.35"
