@@ -56,13 +56,8 @@ pub enum CheckStatus {
     Skipped,
 }
 
-#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum Severity {
-    Error,
-    Warning,
-    Info,
-}
+// Severity 已移至 spec_schema crate
+pub use spec_schema::Severity;
 
 /// 违规：一条未满足的断言。
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

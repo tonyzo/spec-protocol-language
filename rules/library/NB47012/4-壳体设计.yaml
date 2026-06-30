@@ -1,0 +1,76 @@
+# NB/T 47012 壳体设计 —— 合规规则
+#
+# 规则库文件：候选规则，尚未绑定到任何设计类型。
+# 对应 GB150.3-5.3 内压圆筒规则
+
+# ─── 规则 1：环向应力校核 (NB/T 47012 4.2) ───
+# σθ ≤ [σ]^t · φ
+- id: NB47012-4.2.sigma
+  clause: "4.2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "壳体"
+  assertion:
+    type: le
+    value:
+      - {param: sigma}
+      - {limit: sigma_allow}
+  message: "环向应力 {actual} MPa 超过许用应力 {expected} MPa"
+
+# ─── 规则 2：最小壁厚校核 (NB/T 47012 4.2) ───
+# δ ≥ δ_min
+- id: NB47012-4.2.delta_min
+  clause: "4.2"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "壳体"
+  assertion:
+    type: ge
+    value:
+      - {param: delta}
+      - {limit: delta_min}
+  message: "壁厚 {actual} mm 小于最小允许壁厚 {expected} mm"
+
+# ─── 规则 3：管程/壳程压差校核 (NB/T 47012 4.2) ───
+# ΔP = |P_tube - P_shell| ≤ ΔP_max
+- id: NB47012-4.2.pressure_diff
+  clause: "4.2"
+  severity: warning
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "壳体"
+  assertion:
+    type: le
+    value:
+      - {param: pressure_diff}
+      - {limit: pressure_diff_max}
+  message: "管壳程压差 {actual} MPa 超过允许值 {expected} MPa"
+
+# ─── 规则 4：焊接系数范围 (NB/T 47012 4.3) ───
+# 0 < φ ≤ 1.0
+- id: NB47012-4.3.phi_range
+  clause: "4.3"
+  severity: error
+  applicability:
+    type: eq
+    value:
+      - {attr: element_type}
+      - "壳体"
+  assertion:
+    type: and
+    value:
+      - type: gt
+        value:
+          - 0
+      - type: le
+        value:
+          - 1.0
+  message: "焊接接头系数 {actual} 超出允许范围 (0, 1.0]"

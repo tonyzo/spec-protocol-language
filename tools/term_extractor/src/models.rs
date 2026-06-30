@@ -5,17 +5,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// 参数类型枚举
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum ParamType {
-    /// 计算软件提供的计算值
-    Parameter,
-    /// 标准规定的限值/阈值
-    Limit,
-    /// 分类属性(用于适用性筛选)
-    Attr,
-}
+// ParamType 已移至 spec_schema crate（与 spec_core 共享）
+pub use spec_schema::ParamType;
 
 /// 置信度级别
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

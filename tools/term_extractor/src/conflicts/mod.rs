@@ -7,6 +7,7 @@ pub mod report;
 
 use serde::{Deserialize, Serialize};
 use crate::models::{ParamMapping, TermEntry};
+use spec_schema::SpecRule;
 use std::collections::HashMap;
 
 // ── 类型定义 ──────────────────────────────────
@@ -243,4 +244,262 @@ fn generate_unit_conversion_advice(param_name: &str) -> String {
     }
 
     advice
+}
+
+/// 规则冲突检测：比较相同 rule_id 的规则 assertion 差异
+///
+/// 接收多个标准的规则列表，查找相同 rule_id 但 assertion 描述不同的规则。
+/// 用于发现同一场景在不同标准中要求不同的情况。
+pub fn detect_rule_conflicts(
+    standards: &[(&str, &[SpecRule])],
+    result: &mut ConflictResult,
+) {
+    // 按 rule_id 分组
+    let mut rule_map: HashMap<String, Vec<(&str, &SpecRule)>> = HashMap::new();
+
+    for (standard_name, rules) in standards {
+        for rule in *rules {
+            rule_map
+                .entry(rule.id.clone())
+                .or_insert_with(Vec::new)
+                .push((standard_name, rule));
+        }
+    }
+
+    // 查找相同 rule_id 但 assertion 不同的规则
+    for (rule_id, entries) in &rule_map {
+        if entries.len() < 2 {
+            continue;
+        }
+
+        // 比较 assertion 描述
+        let unique_assertions: std::collections::HashSet<_> =
+            entries.iter().map(|(_, r)| r.describe_assertion()).collect();
+
+        if unique_assertions.len() > 1 {
+            let std_names: Vec<String> = entries.iter().map(|(s, _)| s.to_string()).collect();
+            let details = format!(
+                "规则 '{}' 在不同标准中有不同判据:\n{}",
+                rule_id,
+                entries.iter()
+                    .map(|(s, r)| format!("  {}: {}", s, r.describe_assertion()))
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            );
+
+            result.add_conflict(ConflictItem {
+                conflict_type: ConflictType::Rule,
+                severity: ConflictSeverity::Error,
+                standards: std_names,
+                details,
+                resolution: "规则判据不同,需要人工确认哪个标准的要求更严格".to_string(),
+            });
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::{SpecMapping, Confidence};
+    use spec_schema::{Assertion, Operand, ParamType, Severity};
+
+    fn make_term(
+        term_id: &str,
+        standard_term: &str,
+        definition: &str,
+        param_name: &str,
+        unit: Option<&str>,
+    ) -> TermEntry {
+        TermEntry {
+            term_id: term_id.to_string(),
+            standard_term: standard_term.to_string(),
+            definition: definition.to_string(),
+            spec_mapping: SpecMapping {
+                param_type: ParamType::Parameter,
+                name: param_name.to_string(),
+                unit: unit.map(|s| s.to_string()),
+                data_type: "f64".to_string(),
+                allowed_values: None,
+            },
+            source_clause: "5.3".to_string(),
+            referenced_by: vec![],
+            related_terms: vec![],
+            confidence: Confidence::High,
+            note: None,
+            synonyms: vec![],
+        }
+    }
+
+    fn make_mapping(standard: &str, terms: Vec<TermEntry>) -> ParamMapping {
+        let mut mapping = ParamMapping::new(standard, "2024", vec!["1".to_string()]);
+        for term in terms {
+            mapping.add_term(term);
+        }
+        mapping
+    }
+
+    #[test]
+    fn test_no_conflict_single_standard() {
+        let mapping = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping)]);
+        let result = detector.detect_all();
+        assert_eq!(result.total_conflicts, 0);
+    }
+
+    #[test]
+    fn test_no_conflict_same_values() {
+        let mapping_a = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let mapping_b = make_mapping("NB47012", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping_a), ("NB47012", &mapping_b)]);
+        let result = detector.detect_all();
+        assert_eq!(result.total_conflicts, 0);
+    }
+
+    #[test]
+    fn test_terminology_conflict() {
+        let mapping_a = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let mapping_b = make_mapping("ASME", vec![
+            make_term("pressure.design", "Design Pressure", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping_a), ("ASME", &mapping_b)]);
+        let result = detector.detect_all();
+        assert_eq!(result.terminology_conflicts, 1);
+        assert_eq!(result.total_conflicts, 1);
+    }
+
+    #[test]
+    fn test_parameter_conflict() {
+        let mapping_a = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let mapping_b = make_mapping("NB47012", vec![
+            make_term("pressure.design", "设计压力", "容器顶部表压", "pressure_design", Some("MPa")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping_a), ("NB47012", &mapping_b)]);
+        let result = detector.detect_all();
+        assert_eq!(result.parameter_conflicts, 1);
+    }
+
+    #[test]
+    fn test_unit_conflict() {
+        let mapping_a = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("MPa")),
+        ]);
+        let mapping_b = make_mapping("ASME", vec![
+            make_term("pressure.design", "设计压力", "压力容器顶部压力", "pressure_design", Some("psi")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping_a), ("ASME", &mapping_b)]);
+        let result = detector.detect_all();
+        assert_eq!(result.unit_conflicts, 1);
+    }
+
+    #[test]
+    fn test_multiple_conflicts_same_param() {
+        let mapping_a = make_mapping("GB150", vec![
+            make_term("pressure.design", "设计压力", "定义A", "pressure_design", Some("MPa")),
+        ]);
+        let mapping_b = make_mapping("ASME", vec![
+            make_term("pressure.design", "Design Pressure", "定义B", "pressure_design", Some("psi")),
+        ]);
+        let detector = ConflictDetector::new(&[("GB150", &mapping_a), ("ASME", &mapping_b)]);
+        let result = detector.detect_all();
+        assert_eq!(result.terminology_conflicts, 1);
+        assert_eq!(result.parameter_conflicts, 1);
+        assert_eq!(result.unit_conflicts, 1);
+        assert_eq!(result.total_conflicts, 3);
+    }
+
+    #[test]
+    fn test_detect_rule_conflicts_same_assertion() {
+        let rule = SpecRule {
+            id: "sigma_check".to_string(),
+            clause: "5.3".to_string(),
+            severity: Severity::Error,
+            applicability: None,
+            assertion: Assertion::Le(
+                Operand::ParamRef { param: "sigma".into() },
+                Operand::LimitRef { limit: "sigma_allow".into() },
+            ),
+            message: None,
+        };
+        let rules_a = vec![rule.clone()];
+        let rules_b = vec![rule];
+        let mut result = ConflictResult::new();
+        detect_rule_conflicts(&[("GB150", &rules_a), ("NB47012", &rules_b)], &mut result);
+        assert_eq!(result.rule_conflicts, 0);
+    }
+
+    #[test]
+    fn test_detect_rule_conflicts_different_assertion() {
+        let rule_a = SpecRule {
+            id: "sigma_check".to_string(),
+            clause: "5.3".to_string(),
+            severity: Severity::Error,
+            applicability: None,
+            assertion: Assertion::Le(
+                Operand::ParamRef { param: "sigma".into() },
+                Operand::LimitRef { limit: "sigma_allow".into() },
+            ),
+            message: None,
+        };
+        let rule_b = SpecRule {
+            id: "sigma_check".to_string(),
+            clause: "5.3".to_string(),
+            severity: Severity::Error,
+            applicability: None,
+            assertion: Assertion::Lt(
+                Operand::ParamRef { param: "sigma".into() },
+                Operand::LimitRef { limit: "sigma_allow".into() },
+            ),
+            message: None,
+        };
+        let rules_a = vec![rule_a];
+        let rules_b = vec![rule_b];
+        let mut result = ConflictResult::new();
+        detect_rule_conflicts(&[("GB150", &rules_a), ("ASME", &rules_b)], &mut result);
+        assert_eq!(result.rule_conflicts, 1);
+    }
+
+    #[test]
+    fn test_detect_rule_conflicts_no_matching_id() {
+        let rule_a = SpecRule {
+            id: "rule_a".to_string(),
+            clause: "5.3".to_string(),
+            severity: Severity::Error,
+            applicability: None,
+            assertion: Assertion::Exists(Operand::AttrRef { attr: "pwht".into() }),
+            message: None,
+        };
+        let rule_b = SpecRule {
+            id: "rule_b".to_string(),
+            clause: "7.3".to_string(),
+            severity: Severity::Error,
+            applicability: None,
+            assertion: Assertion::Exists(Operand::AttrRef { attr: "rt".into() }),
+            message: None,
+        };
+        let rules_a = vec![rule_a];
+        let rules_b = vec![rule_b];
+        let mut result = ConflictResult::new();
+        detect_rule_conflicts(&[("GB150", &rules_a), ("ASME", &rules_b)], &mut result);
+        assert_eq!(result.rule_conflicts, 0);
+    }
+
+    #[test]
+    fn test_unit_conversion_advice() {
+        assert!(generate_unit_conversion_advice("pressure_design").contains("145.038"));
+        assert!(generate_unit_conversion_advice("thickness").contains("25.4"));
+        assert!(generate_unit_conversion_advice("temperature").contains("9/5"));
+        assert!(generate_unit_conversion_advice("stress_max").contains("145.038"));
+        assert!(generate_unit_conversion_advice("unknown_param").contains("换算表"));
+    }
 }

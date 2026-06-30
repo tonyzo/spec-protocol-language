@@ -1,0 +1,10 @@
+[package]
+name = "spec"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "SPEC Protocol 统一 CLI 入口"
+
+[[bin]]
+name = "spec"
+path = "src/main.rs"

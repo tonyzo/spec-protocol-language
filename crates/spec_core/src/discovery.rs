@@ -201,6 +201,29 @@ impl DiscoveryEngine {
         candidates
     }
 
+    /// 增量发现：仅发现条款号匹配指定列表的候选审查点。
+    ///
+    /// 用于标准更新场景：
+    /// 1. 用 term_extractor diff 比较新旧 param_mapping.json
+    /// 2. 从 diff 结果提取变更的条款号列表
+    /// 3. 调用此方法仅对变更条款重新发现候选审查点
+    ///
+    /// 避免全量重新发现，减少人工确认工作量。
+    pub fn discover_changed(
+        &self,
+        table: &ParameterTable,
+        changed_clauses: &[String],
+    ) -> Vec<CandidateReviewPoint> {
+        self.discover(table)
+            .into_iter()
+            .filter(|c| {
+                changed_clauses
+                    .iter()
+                    .any(|cl| c.rule.clause.contains(cl.as_str()))
+            })
+            .collect()
+    }
+
     // ─── 沉淀审查点 ───
 
     /// 将已确认的审查点沉淀为 YAML 文件并更新注册表。

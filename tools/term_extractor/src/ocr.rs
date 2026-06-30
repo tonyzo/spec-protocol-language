@@ -49,6 +49,53 @@ pub struct OcrConfig {
     pub batch_size: usize,
 }
 
+/// OCR 后端 trait —— 定义 OCR 工具应实现的接口
+///
+/// 实现者：
+/// - `MockOcrBackend`：模拟实现（当前使用，标记 TODO）
+/// - `UnlimitedOcrBackend`：TODO: 集成真实 Unlimited OCR
+/// - `PaddleOcrBackend`：TODO: 集成 PaddleOCR
+/// - `TesseractBackend`：TODO: 集成 Tesseract
+pub trait OcrBackend: Send + Sync {
+    /// 处理 PDF 文件，返回结构化文本
+    fn process_pdf(&self, input: &Path) -> anyhow::Result<OcrResult>;
+
+    /// 处理 Word 文件，返回结构化文本
+    fn process_word(&self, input: &Path) -> anyhow::Result<OcrResult>;
+
+    /// 后端名称（用于日志和报告）
+    fn name(&self) -> &str;
+}
+
+/// 模拟 OCR 后端 — 生成占位文本，用于开发测试
+///
+/// TODO: 替换为真实 OCR 后端实现
+pub struct MockOcrBackend;
+
+impl OcrBackend for MockOcrBackend {
+    fn process_pdf(&self, input: &Path) -> anyhow::Result<OcrResult> {
+        log::warn!("[MockOcrBackend] 使用模拟数据处理 PDF: {:?}", input);
+        Ok(OcrResult {
+            text: format!("# 模拟 OCR 结果\n\n来源: {:?}\n\nTODO: 集成真实 OCR 工具", input),
+            confidence: 0.0,
+            blocks: vec![],
+        })
+    }
+
+    fn process_word(&self, input: &Path) -> anyhow::Result<OcrResult> {
+        log::warn!("[MockOcrBackend] 使用模拟数据处理 Word: {:?}", input);
+        Ok(OcrResult {
+            text: format!("# 模拟 OCR 结果\n\n来源: {:?}\n\nTODO: 集成真实 OCR 工具", input),
+            confidence: 0.0,
+            blocks: vec![],
+        })
+    }
+
+    fn name(&self) -> &str {
+        "mock"
+    }
+}
+
 /// OCR处理器
 pub struct OcrProcessor {
     config: OcrConfig,

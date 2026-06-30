@@ -36,6 +36,11 @@ impl ComplianceEngine {
         table: &ParameterTable,
         context: DesignContext,
     ) -> ComplianceReport {
+        log::info!("合规校核开始: {} 条规则", self.rules.len());
+        if let Some(ref eid) = context.element_id {
+            log::info!("  目标: {}", eid);
+        }
+
         let results: Vec<RuleResult> = self
             .rules
             .iter()
@@ -48,6 +53,22 @@ impl ComplianceEngine {
             summary: Default::default(),
         };
         report.summarize();
+
+        // 审计日志
+        let s = &report.summary;
+        log::info!(
+            "合规校核完成: total={} pass={} fail={} ({} errors, {} warnings) na={} skip={}",
+            s.total, s.passed, s.failed, s.errors, s.warnings, s.not_applicable, s.skipped
+        );
+        for r in &report.results {
+            match r.status {
+                CheckStatus::Pass => log::debug!("  [PASS] {} ({})", r.rule_id, r.clause),
+                CheckStatus::Fail => log::warn!("  [FAIL] {} ({}): {}", r.rule_id, r.clause, r.message),
+                CheckStatus::NotApplicable => log::debug!("  [N/A]  {} ({})", r.rule_id, r.clause),
+                CheckStatus::Skipped => log::warn!("  [SKIP] {} ({}): {}", r.rule_id, r.clause, r.message),
+            }
+        }
+
         report
     }
 }

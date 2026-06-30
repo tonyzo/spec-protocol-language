@@ -6,10 +6,13 @@ license.workspace = true
 description = "SPEC Protocol compliance engine core — GB150 rule matching for pressure vessel design"
 
 [dependencies]
+spec_schema = { path = "../spec_schema" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+log = "0.4"
 
 [dev-dependencies]
 # 内联测试使用以上依赖，无需额外 dev-deps

@@ -1,0 +1,27 @@
+{
+  "name": "spec-sdk",
+  "version": "0.1.0",
+  "description": "SPEC Protocol 合规引擎 napi-rs SDK",
+  "main": "spec-sdk.node",
+  "types": "spec-sdk.d.ts",
+  "napi": {
+    "name": "spec-sdk",
+    "triples": {
+      "defaults": true
+    }
+  },
+  "scripts": {
+    "build": "napi build --release",
+    "build:debug": "napi build",
+    "prepublishOnly": "napi prepublish -t npm",
+    "artifacts": "napi artifacts",
+    "version": "napi version"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0"
+  },
+  "engines": {
+    "node": ">= 14"
+  },
+  "license": "MIT"
+}

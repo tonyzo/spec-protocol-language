@@ -12,6 +12,8 @@ name = "term_extractor"
 path = "src/main.rs"
 
 [dependencies]
+# 共享数据契约
+spec_schema = { path = "../../crates/spec_schema" }
 # CLI参数解析
 clap = { version = "4.4", features = ["derive"] }
 # JSON序列化/反序列化

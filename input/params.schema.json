@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spec-protocol.dev/schemas/params.schema.json",
+  "title": "SPEC Protocol Input Parameter Table",
+  "description": "输入参数表 Schema（ADR-003/ADR-005）—— 计算软件输出的结构化参数表，含参数值、限值和分类属性",
+
+  "type": "object",
+  "required": ["parameter_table"],
+  "properties": {
+    "context": {
+      "type": "object",
+      "description": "设计上下文元数据（用于报告溯源）",
+      "properties": {
+        "element_id": {
+          "type": "string",
+          "description": "设备/元件标识，如 vessel.V-101.shell"
+        },
+        "element_type": {
+          "type": "string",
+          "description": "元件类型，如 内压圆筒"
+        },
+        "standard": {
+          "type": "string",
+          "description": "标准号，如 GB/T 150.3-2024"
+        }
+      },
+      "additionalProperties": false
+    },
+    "parameter_table": {
+      "type": "object",
+      "required": ["parameters", "limits", "attrs"],
+      "properties": {
+        "parameters": {
+          "type": "object",
+          "description": "参数值区（ADR-005 分区）—— 计算软件输出的设计结果",
+          "additionalProperties": {
+            "$ref": "#/$defs/Quantity"
+          }
+        },
+        "limits": {
+          "type": "object",
+          "description": "限值区（ADR-005 分区）—— 判据边界值，同样由计算软件提供",
+          "additionalProperties": {
+            "$ref": "#/$defs/Quantity"
+          }
+        },
+        "attrs": {
+          "type": "object",
+          "description": "分类属性区 —— 字符串型，用于适用性筛选（元件类型、材质牌号等）",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+    "Quantity": {
+      "type": "object",
+      "description": "带单位的量（ADR-005）",
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "数值"
+        },
+        "unit": {
+          "type": "string",
+          "description": "单位（mm, MPa, ℃ 等）。空字符串表示无单位约束（数值字面量）"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

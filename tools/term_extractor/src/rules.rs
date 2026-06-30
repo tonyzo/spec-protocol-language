@@ -3,9 +3,152 @@
 //! 从param_mapping.json生成规则YAML骨架
 
 use crate::models::ParamMapping;
+use spec_schema::{Assertion, Operand, Severity, SpecRule};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+
+// ── 规则模板系统 ───────────────────────────
+
+/// 规则模板 — 可复用的规则生成模式
+///
+/// 替代字符串拼接，直接构造 SpecRule 结构体再序列化为 YAML，更类型安全。
+pub enum RuleTemplate {
+    /// 参数 vs 限值比较：`param >= limit`
+    RangeCheck {
+        id: String,
+        clause: String,
+        param: String,
+        limit: String,
+        op: CompareOp,
+        element_type: String,
+        message: String,
+    },
+    /// 属性存在性检查：`exists(attr)`
+    ExistenceCheck {
+        id: String,
+        clause: String,
+        attr: String,
+        element_type: String,
+        message: String,
+    },
+    /// 条件触发：`when param > threshold then exists(attr)`
+    ConditionalCheck {
+        id: String,
+        clause: String,
+        cond_param: String,
+        threshold: f64,
+        then_attr: String,
+        element_type: String,
+        message: String,
+    },
+}
+
+/// 比较运算符
+pub enum CompareOp {
+    Ge, // >=
+    Le, // <=
+    Gt, // >
+    Lt, // <
+}
+
+impl RuleTemplate {
+    /// 实例化模板，生成 SpecRule
+    pub fn instantiate(&self) -> SpecRule {
+        match self {
+            RuleTemplate::RangeCheck {
+                id,
+                clause,
+                param,
+                limit,
+                op,
+                element_type,
+                message,
+            } => SpecRule {
+                id: id.clone(),
+                clause: clause.clone(),
+                severity: Severity::Error,
+                applicability: Some(Assertion::Eq(
+                    Operand::AttrRef { attr: "element_type".into() },
+                    Operand::Str(element_type.clone()),
+                )),
+                assertion: match op {
+                    CompareOp::Ge => Assertion::Ge(
+                        Operand::ParamRef { param: param.clone() },
+                        Operand::LimitRef { limit: limit.clone() },
+                    ),
+                    CompareOp::Le => Assertion::Le(
+                        Operand::ParamRef { param: param.clone() },
+                        Operand::LimitRef { limit: limit.clone() },
+                    ),
+                    CompareOp::Gt => Assertion::Gt(
+                        Operand::ParamRef { param: param.clone() },
+                        Operand::LimitRef { limit: limit.clone() },
+                    ),
+                    CompareOp::Lt => Assertion::Lt(
+                        Operand::ParamRef { param: param.clone() },
+                        Operand::LimitRef { limit: limit.clone() },
+                    ),
+                },
+                message: Some(message.clone()),
+            },
+            RuleTemplate::ExistenceCheck {
+                id,
+                clause,
+                attr,
+                element_type,
+                message,
+            } => SpecRule {
+                id: id.clone(),
+                clause: clause.clone(),
+                severity: Severity::Error,
+                applicability: Some(Assertion::Eq(
+                    Operand::AttrRef { attr: "element_type".into() },
+                    Operand::Str(element_type.clone()),
+                )),
+                assertion: Assertion::Exists(Operand::AttrRef { attr: attr.clone() }),
+                message: Some(message.clone()),
+            },
+            RuleTemplate::ConditionalCheck {
+                id,
+                clause,
+                cond_param,
+                threshold,
+                then_attr,
+                element_type,
+                message,
+            } => SpecRule {
+                id: id.clone(),
+                clause: clause.clone(),
+                severity: Severity::Error,
+                applicability: Some(Assertion::Eq(
+                    Operand::AttrRef { attr: "element_type".into() },
+                    Operand::Str(element_type.clone()),
+                )),
+                assertion: Assertion::When {
+                    cond: Box::new(Assertion::Gt(
+                        Operand::ParamRef { param: cond_param.clone() },
+                        Operand::Num(*threshold),
+                    )),
+                    then: Box::new(Assertion::Exists(Operand::AttrRef { attr: then_attr.clone() })),
+                },
+                message: Some(message.clone()),
+            },
+        }
+    }
+}
+
+/// 从模板列表生成规则 YAML 文件
+pub fn generate_from_templates(
+    templates: &[RuleTemplate],
+    output: &Path,
+) -> anyhow::Result<()> {
+    let rules: Vec<SpecRule> = templates.iter().map(|t| t.instantiate()).collect();
+    let yaml = serde_yaml::to_string(&rules)?;
+    fs::write(output, yaml)?;
+    log::info!("从模板生成 {} 条规则 → {:?}", rules.len(), output);
+    Ok(())
+}
 
 /// 生成规则YAML骨架
 pub fn generate_rules(mapping: &ParamMapping, output: &Path) -> anyhow::Result<()> {
@@ -239,4 +382,98 @@ fn generate_pressure_test_rules(_mapping: &ParamMapping) -> anyhow::Result<(Stri
     content.push_str("# (待补充)\n");
     
     Ok(("11-耐压试验.yaml".to_string(), content))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_range_check_template_ge() {
+        let template = RuleTemplate::RangeCheck {
+            id: "test.ge".to_string(),
+            clause: "5.3".to_string(),
+            param: "delta".to_string(),
+            limit: "delta_min".to_string(),
+            op: CompareOp::Ge,
+            element_type: "内压圆筒".to_string(),
+            message: "壁厚不足".to_string(),
+        };
+        let rule = template.instantiate();
+        assert_eq!(rule.id, "test.ge");
+        assert_eq!(rule.severity, Severity::Error);
+        assert!(rule.applicability.is_some());
+        assert!(matches!(rule.assertion, Assertion::Ge(..)));
+    }
+
+    #[test]
+    fn test_range_check_template_le() {
+        let template = RuleTemplate::RangeCheck {
+            id: "test.le".to_string(),
+            clause: "5.3".to_string(),
+            param: "sigma".to_string(),
+            limit: "sigma_allow".to_string(),
+            op: CompareOp::Le,
+            element_type: "内压圆筒".to_string(),
+            message: "应力超限".to_string(),
+        };
+        let rule = template.instantiate();
+        assert!(matches!(rule.assertion, Assertion::Le(..)));
+    }
+
+    #[test]
+    fn test_range_check_template_gt_lt() {
+        let t_gt = RuleTemplate::RangeCheck {
+            id: "test.gt".to_string(),
+            clause: "5.3".to_string(),
+            param: "p".to_string(),
+            limit: "p_crit".to_string(),
+            op: CompareOp::Gt,
+            element_type: "内压圆筒".to_string(),
+            message: "test".to_string(),
+        };
+        assert!(matches!(t_gt.instantiate().assertion, Assertion::Gt(..)));
+
+        let t_lt = RuleTemplate::RangeCheck {
+            id: "test.lt".to_string(),
+            clause: "5.3".to_string(),
+            param: "p".to_string(),
+            limit: "p_crit".to_string(),
+            op: CompareOp::Lt,
+            element_type: "内压圆筒".to_string(),
+            message: "test".to_string(),
+        };
+        assert!(matches!(t_lt.instantiate().assertion, Assertion::Lt(..)));
+    }
+
+    #[test]
+    fn test_existence_check_template() {
+        let template = RuleTemplate::ExistenceCheck {
+            id: "test.exists".to_string(),
+            clause: "7.3".to_string(),
+            attr: "pwht_done".to_string(),
+            element_type: "内压圆筒".to_string(),
+            message: "需要焊后热处理".to_string(),
+        };
+        let rule = template.instantiate();
+        assert_eq!(rule.id, "test.exists");
+        assert!(rule.applicability.is_some());
+        assert!(matches!(rule.assertion, Assertion::Exists(..)));
+    }
+
+    #[test]
+    fn test_conditional_check_template() {
+        let template = RuleTemplate::ConditionalCheck {
+            id: "test.conditional".to_string(),
+            clause: "7.3".to_string(),
+            cond_param: "delta".to_string(),
+            threshold: 38.0,
+            then_attr: "pwht_done".to_string(),
+            element_type: "内压圆筒".to_string(),
+            message: "壁厚超过38mm需要PWHT".to_string(),
+        };
+        let rule = template.instantiate();
+        assert!(matches!(rule.assertion, Assertion::When { .. }));
+        assert!(rule.message.is_some());
+    }
 }

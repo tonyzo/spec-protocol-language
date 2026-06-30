@@ -1,0 +1,12 @@
+[package]
+name = "spec_schema"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "SPEC Protocol 共享数据契约 — spec_core 与 term_extractor 的统一类型定义"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_yaml = "0.9"
